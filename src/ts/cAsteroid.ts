@@ -48,8 +48,7 @@ module app {
                         ctx.restore();
                 }
 
-                constructor(x: number = undefined, y: number = undefined, size: number = undefined,
-                        color: string = "white", line_width: number = 2) {
+                constructor(x: number = undefined, y: number = undefined, size: number = undefined, color: string = "white", line_width: number = 2) {
                         if (x == undefined) {
                                 this.x = Math.round(Math.random() * 1280);
                         }
@@ -141,5 +140,4 @@ module app {
                 }
 
         }
-
 }

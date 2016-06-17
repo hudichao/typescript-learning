@@ -16,13 +16,41 @@ function keyboardInput(event: KeyboardEvent) {
     else if (event.keyCode == 40 || event.keyCode == 83) {
         space_ship.decelerate();
     }
+
+    // PRESS SPACE BAR
+    else if (event.keyCode == 32) {
+        if (bulletWait > 0) {
+            return;
+        }
+        bulletWait = 0.5;
+        var bullet: app.cBullet;
+        for (var i: number = 0; i < bullet_array.length; i++) {
+            bullet = bullet_array[i];
+            if (bullet.active == false) {
+                break;
+            }
+        }
+        if (bullet == null || bullet.active == true) {
+            bullet = new app.cBullet(space_ship.x, space_ship.y, 3);
+            bullet_array.push(bullet);
+        }
+        else {
+            bullet.x = space_ship.x;
+            bullet.y = space_ship.y;
+            bullet.active = true;
+        }
+        bullet.launch(space_ship.orientation);
+    }
 }
 
 
 
 var canvas: HTMLCanvasElement;
 var ctx: CanvasRenderingContext2D;
-
+var bullet_array: Array<app.cBullet> = new Array<app.cBullet>();
+var bulletWait = 0;
+var deltaTime = 0;
+var lastTime = 0;
 
 function gameLoop() {
     requestAnimationFrame(gameLoop);
@@ -35,6 +63,18 @@ function gameLoop() {
     }
     asteroid.draw();
     space_ship.draw();
+
+    var bullet:app.cBullet;
+
+    deltaTime = (new Date().getTime() - lastTime) / 1000;
+    lastTime = Date.now();
+    if (bulletWait> 0) {
+        bulletWait -= deltaTime;
+    }
+    for (var i = 0; i < bullet_array.length; i++) {
+        bullet = bullet_array[i];
+        bullet.draw();
+    }
 }
 var shape_array: Array<app.iShape> = new Array<app.iShape>();
 var asteroid: app.cAsteroid;

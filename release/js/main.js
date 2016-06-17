@@ -115,6 +115,66 @@ var app;
 })(app || (app = {}));
 var app;
 (function (app) {
+    var cBullet = (function () {
+        function cBullet(x, y, size, color, lineWidth) {
+            var _this = this;
+            if (color === void 0) { color = "red"; }
+            if (lineWidth === void 0) { lineWidth = 5; }
+            this.active = true;
+            this.x = 0;
+            this.y = 0;
+            this.lineWidth = 5;
+            this.size = 0;
+            this.color = "red";
+            this.lineWidthAnimVal = 0;
+            this.widthUp = true;
+            this.velocity = new app.cVector();
+            this.speed = 5;
+            this.launch = function (orientation) {
+                _this.velocity.copy(orientation);
+                _this.velocity.multiply(_this.speed);
+            };
+            this.draw = function () {
+                if (_this.active == false) {
+                    return;
+                }
+                if (_this.widthUp == true) {
+                    _this.lineWidthAnimVal += 0.1;
+                    if (_this.lineWidthAnimVal >= 2) {
+                        _this.widthUp = false;
+                    }
+                }
+                else {
+                    _this.lineWidthAnimVal -= 0.1;
+                    if (_this.lineWidthAnimVal <= -2) {
+                        _this.widthUp = true;
+                    }
+                }
+                _this.x += _this.velocity.x;
+                _this.y += _this.velocity.y;
+                if (_this.x < -10 || _this.x > 1290 || _this.y < -10 || _this.y > 730) {
+                    _this.active = false;
+                }
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = _this.color;
+                ctx.lineWidth = _this.lineWidth + _this.lineWidthAnimVal;
+                ctx.rect(_this.x, _this.y, _this.size, _this.size);
+                ctx.stroke();
+                ctx.restore();
+            };
+            this.x = x;
+            this.y = y;
+            this.size = size;
+            this.color = color;
+            this.lineWidth = lineWidth;
+        }
+        return cBullet;
+    }());
+    app.cBullet = cBullet;
+})(app || (app = {}));
+var app;
+(function (app) {
     var cCircle = (function () {
         function cCircle(x, y, radius, color, lineWidth) {
             var _this = this;
@@ -361,9 +421,36 @@ function keyboardInput(event) {
     else if (event.keyCode == 40 || event.keyCode == 83) {
         space_ship.decelerate();
     }
+    else if (event.keyCode == 32) {
+        if (bulletWait > 0) {
+            return;
+        }
+        bulletWait = 0.5;
+        var bullet;
+        for (var i = 0; i < bullet_array.length; i++) {
+            bullet = bullet_array[i];
+            if (bullet.active == false) {
+                break;
+            }
+        }
+        if (bullet == null || bullet.active == true) {
+            bullet = new app.cBullet(space_ship.x, space_ship.y, 3);
+            bullet_array.push(bullet);
+        }
+        else {
+            bullet.x = space_ship.x;
+            bullet.y = space_ship.y;
+            bullet.active = true;
+        }
+        bullet.launch(space_ship.orientation);
+    }
 }
 var canvas;
 var ctx;
+var bullet_array = new Array();
+var bulletWait = 0;
+var deltaTime = 0;
+var lastTime = 0;
 function gameLoop() {
     requestAnimationFrame(gameLoop);
     ctx.fillStyle = "black";
@@ -375,6 +462,16 @@ function gameLoop() {
     }
     asteroid.draw();
     space_ship.draw();
+    var bullet;
+    deltaTime = (new Date().getTime() - lastTime) / 1000;
+    lastTime = Date.now();
+    if (bulletWait > 0) {
+        bulletWait -= deltaTime;
+    }
+    for (var i = 0; i < bullet_array.length; i++) {
+        bullet = bullet_array[i];
+        bullet.draw();
+    }
 }
 var shape_array = new Array();
 var asteroid;
