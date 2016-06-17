@@ -1,221 +1,65 @@
-interface iShape {
-    draw(): void;
-    x: number;
-    y: number;
-    color: string;
-    lineWidth: number;
-}
 
-class cCircle implements iShape {
-   constructor(public x: number, public y: number, public radius: number, public color: string = "red", public lineWidth: number = 2)
-   {
-   }
-   public draw = (): void => {
-      ctx.save();
-      ctx.beginPath();
-      ctx.strokeStyle = this.color;
-      ctx.lineWidth = this.lineWidth;
-      ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-      ctx.stroke();
-      ctx.restore();
-   }
-}
-
-class cRectangle implements iShape {
-   constructor(public x: number, public y: number, public width: number, public height: number, public color: string = "blue", public lineWidth: number = 5)
-   {
-   }
-   public draw = (): void => {
-      ctx.save();
-      ctx.beginPath();
-      ctx.strokeStyle = this.color;
-      ctx.lineWidth = this.lineWidth;
-      ctx.rect(this.x, this.y, this.width, this.height);
-      ctx.stroke();
-      ctx.restore();
-   }
+function keyboardInput(event: KeyboardEvent) {
+    // PRESS LEFT ARROW OR 'A' KEY
+    if (event.keyCode == 37 || event.keyCode == 65) {
+        space_ship.turnLeft();
+    }
+    // PRESS UP ARROW OR 'W' KEY
+    else if (event.keyCode == 38 || event.keyCode == 87) {
+        space_ship.accelerate();
+    }
+    // PRESS RIGHT ARROW OR 'D' KEY
+    else if (event.keyCode == 39 || event.keyCode == 68) {
+        space_ship.turnRight();
+    }
+    // PRESS DOWN ARROW OR 'S' KEY
+    else if (event.keyCode == 40 || event.keyCode == 83) {
+        space_ship.decelerate();
+    }
 }
 
 
-class cPoint {
-   constructor(public x: number = 0, public y: number = 0) {
-   }
-}
+
 var canvas: HTMLCanvasElement;
 var ctx: CanvasRenderingContext2D;
 
-
-var circle1: cCircle = new cCircle(200, 300, 50);
-var circle2: cCircle = new cCircle(400, 550, 150, "blue", 5);
 
 function gameLoop() {
     requestAnimationFrame(gameLoop);
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, 1280, 720);
-    var shape: iShape;
+    var shape: app.iShape;
     for (var i: number = 0; i < shape_array.length; i++) {
         shape = shape_array[i];
         shape.draw();
     }
+    asteroid.draw();
+    space_ship.draw();
 }
-var shape_array: Array<iShape> = new Array<iShape>();
+var shape_array: Array<app.iShape> = new Array<app.iShape>();
+var asteroid: app.cAsteroid;
+var space_ship: app.cSpaceShip;
 
 window.onload = () => {
     canvas = <HTMLCanvasElement>document.getElementById("canvas");
     ctx = canvas.getContext("2d");
 
-    shape_array.push(new cAsteroid());
-    shape_array.push(new cAsteroid());
-    shape_array.push(new cAsteroid());
-    shape_array.push(new cAsteroid());
-    shape_array.push(new cAsteroid());
+    // shape_array.push(new cAsteroid());
+    // shape_array.push(new cAsteroid());
+    // shape_array.push(new cAsteroid());
+    // shape_array.push(new cAsteroid());
+    // shape_array.push(new cAsteroid());
 
-    shape_array.push(new cCircle(20, 50, 30));
-    shape_array.push(new cCircle(120, 70, 50));
+    // shape_array.push(new cCircle(20, 50, 30));
+    // shape_array.push(new cCircle(120, 70, 50));
 
-    shape_array.push(new cRectangle(500, 500, 80, 60));
+    shape_array.push(new app.cRectangle(500, 500, 80, 60));
+    space_ship = new app.cSpaceShip(200, 450, 5);
+    asteroid = new app.cAsteroid();
+    asteroid.velocityX = 0;
+    asteroid.velocityY = 0;
+
+    document.addEventListener('keydown', keyboardInput);
+
     gameLoop();
-}
-
-class cAsteroid implements iShape {
- public x: number = 0;
- public y: number = 0;
- public velocityX: number = 0;
- public velocityY: number = 0;
- public lineWidth: number = 5;
- public color: string = "white";
- public size: number = 20;
- public rotation: number = 0;
- public rotationSpeed: number = 0;
- public pointList: Array<cPoint> = new Array<cPoint>();
-
- public draw = (): void => {
-  this.x += this.velocityX;
-  this.y += this.velocityY;
-
-  if (this.x < -this.size * 2) {
-   this.x = 1280 + this.size * 2;
-  }
-  else if (this.x > 1280 + this.size * 2) {
-   this.x = -2 * this.size;
-  }
-
-  if (this.y < -this.size * 2) {
-   this.y = 720 + this.size * 2;
-  }
-  else if (this.y > 720 + this.size * 2) {
-   this.y = -2 * this.size;
-  }
-
-  this.rotation += this.rotationSpeed;
-  ctx.save();
-  ctx.translate(this.x, this.y);
-  ctx.rotate(this.rotation);
-  ctx.beginPath();
-  ctx.strokeStyle = this.color;
-  ctx.lineWidth = this.lineWidth;
-
-  ctx.moveTo(this.pointList[this.pointList.length - 1].x, this.pointList[this.pointList.length - 1].y);
-
-  for (var i: number = 0; i < this.pointList.length; i++) {
-   ctx.lineTo(this.pointList[i].x, this.pointList[i].y);
-  }
-
-  ctx.closePath();
-  ctx.stroke();
-  ctx.restore();
- }
-
- constructor(x: number = undefined, y: number = undefined, size: number = undefined, 
-        color: string = "white", line_width: number = 2) {
-  if (x == undefined) {
-   this.x = Math.round(Math.random() * 1280);
-  }
-  else {
-   this.x = x;
-  }
-
-  if (y == undefined) {
-   this.y = Math.round(Math.random() * 720);
-  }
-  else {
-   this.y = y;
-  }
-
-  if (size == undefined) {
-   this.size = Math.ceil(Math.random() * 10) + 4;
-  }
-  else {
-   this.size = size;
-  }
-
-  this.velocityX = Math.round(Math.random() * 4 - 2);
-  this.velocityY = Math.round(Math.random() * 4 - 2);
-
-  this.rotationSpeed = Math.random() * 0.06 - 0.03;
-
-  var xrand: number = 0;
-  var yrand: number = 0;
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-
-  this.pointList.push(new cPoint(xrand, yrand + 3 * this.size));
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-
-  this.pointList.push(new cPoint(xrand - 1 * this.size, yrand + 2 * this.size));
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-
-  this.pointList.push(new cPoint(xrand - 2 * this.size, yrand + 2 * this.size));
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-
-  this.pointList.push(new cPoint(xrand - 3 * this.size, yrand + this.size));
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-
-  this.pointList.push(new cPoint(xrand - 4 * this.size, yrand));
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-
-  this.pointList.push(new cPoint(xrand - 1 * this.size, yrand - 3 * this.size));
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-
-  this.pointList.push(new cPoint(xrand + 2 * this.size, yrand - 4 * this.size));
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-
-  this.pointList.push(new cPoint(xrand + 2 * this.size, yrand - 3 * this.size));
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-
-  this.pointList.push(new cPoint(xrand + 4 * this.size, yrand - 2 * this.size));
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-
-  this.pointList.push(new cPoint(xrand + 4 * this.size, yrand + this.size));
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-
-  this.pointList.push(new cPoint(xrand + 3 * this.size, yrand + 2 * this.size));
-
-  xrand = Math.round(Math.random() * this.size - this.size / 2);
-  yrand = Math.round(Math.random() * this.size - this.size / 2);
-  this.color = color;
-  this.lineWidth = line_width;
- }
-
 }
